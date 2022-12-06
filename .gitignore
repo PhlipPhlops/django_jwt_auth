@@ -1,0 +1,12 @@
+# Django app files
+backend/db.sqlite3
+**/__pycache__
+
+# React app files
+frontend/node_modules/
+frontend/build/
+frontend/.env
+
+# Other files and directories
+.env
+.venv/

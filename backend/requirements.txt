@@ -1,0 +1,4 @@
+django==3.*
+djangorestframework
+djangorestframework-jwt
+psycopg2
