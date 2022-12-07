@@ -30,8 +30,10 @@ def test_endpoint_auth(request):
 @api_view(['POST'])
 @permission_classes([])
 def login_user(request):
-    username = request.POST['username']
-    password = request.POST['password']
+    logger.info(request.POST)
+    username = request.POST.get('username')
+    password = request.POST.get('password')
+    logger.info(f'username: {username}, password: {password}') # Query dict is failing, clearly an environment issue
     user = authenticate(request, username=username, password=password)
     if user is not None:
         login(request, user)
@@ -47,8 +49,10 @@ def login_user(request):
 @api_view(['POST'])
 @permission_classes([])
 def signup_user(request):
-    username = request.POST['username']
-    password = request.POST['password']
+    logger.info(request.POST)
+    username = request.POST.get('username')
+    password = request.POST.get('password')
+    logger.info(f'username: {username}, password: {password}')
     user = User.objects.create_user(username=username, password=password)
     user.save()
     return HttpResponse('User created')
