@@ -3,6 +3,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.authtoken.views import obtain_auth_token
+from rest_framework.response import Response
 import logging
 
 logger = logging.getLogger(__name__)
@@ -23,6 +25,8 @@ def test_endpoint_auth(request):
     return HttpResponse("Hello from the backend! You are authenticated")
 
 
+## Authentication views, these manage values that IsAuthenticated uses to determine if a user is authenticated
+
 @api_view(['POST'])
 @permission_classes([])
 def login_user(request):
@@ -31,7 +35,12 @@ def login_user(request):
     user = authenticate(request, username=username, password=password)
     if user is not None:
         login(request, user)
-        return HttpResponse('Login successful')
+
+        # Use the ObtainAuthToken view to generate an authentication token
+        response = obtain_auth_token(request._request)
+
+        # Return the authentication token in the response
+        return Response({'auth_token': response.data['token']})
     else:
         return HttpResponse('Invalid username or password')
 
@@ -45,6 +54,7 @@ def signup_user(request):
     return HttpResponse('User created')
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def logout_user(request):
     logout(request)
     return HttpResponse('Logout successful')
