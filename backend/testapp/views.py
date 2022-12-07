@@ -1,38 +1,50 @@
-from django.shortcuts import render
 from django.http import HttpResponse
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
-from rest_framework_jwt.serializers import JSONWebTokenSerializer
-from rest_framework.response import Response
-from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 # Create your views here.
-
+@api_view(['GET'])
+@permission_classes([])
 def test_endpoint(request):
+    logger.info(request.user)
     return HttpResponse("Hello from the backend!")
 
+# wrap this function in an authentication decorator
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def test_endpoint_auth(request):
+    logger.info(request.user)
+    return HttpResponse("Hello from the backend! You are authenticated")
 
-class LoginView(APIView):
-    def post(self, request):
-        serializer = JSONWebTokenSerializer(data=request.data)
-        if serializer.is_valid():
-            user = authenticate(
-                username=serializer.validated_data['username'],
-                password=serializer.validated_data['password'],
-            )
-            if user:
-                # The user is authenticated, generate and return a JWT token
-                token = serializer.generate_token(user)
-                return Response({'token': token})
-            else:
-                # The provided username and password are incorrect
-                return Response(
-                    {'error': 'Invalid username or password'},
-                    status=401,
-                )
-        else:
-            # The request data is invalid
-            return Response(
-                {'error': 'Invalid request data'},
-                status=400,
-            )
+
+@api_view(['POST'])
+@permission_classes([])
+def login_user(request):
+    username = request.POST['username']
+    password = request.POST['password']
+    user = authenticate(request, username=username, password=password)
+    if user is not None:
+        login(request, user)
+        return HttpResponse('Login successful')
+    else:
+        return HttpResponse('Invalid username or password')
+
+@api_view(['POST'])
+@permission_classes([])
+def signup_user(request):
+    username = request.POST['username']
+    password = request.POST['password']
+    user = User.objects.create_user(username=username, password=password)
+    user.save()
+    return HttpResponse('User created')
+
+@api_view(['POST'])
+def logout_user(request):
+    logout(request)
+    return HttpResponse('Logout successful')
