@@ -10,3 +10,4 @@ frontend/.env
 # Other files and directories
 .env
 .venv/
+*/venv/
